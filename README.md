@@ -30,7 +30,7 @@ This project is an autonomous AI Agent designed to assist financial analysts wit
 ## Architecture & Logic
 
 **Ingestion Pipeline (Workflow 1)**
-- **MIME Type Correction:** Includes a custom JavaScript node to force `application/pdf` recognition on raw Google Drive binary streams, preventing data loader errors.
+- **MIME Type Correction:** Includes a custom JavaScript node to force `application/pdf` recognition on raw Google Drive binary streams - API returns generic `octet-stream` by default, which causes the data loader to fail. 
 - **Chunking Strategy:** Splits legal text into 500-character chunks with a 50-character overlap. This ensures context (e.g., paragraph numbers) is preserved across boundaries.
 
 **Agentic Retrieval (Workflow 2)**
