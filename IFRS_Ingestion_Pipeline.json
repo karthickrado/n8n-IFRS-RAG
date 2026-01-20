@@ -1,0 +1,345 @@
+{
+  "name": "IFRS RAG - Ingestion",
+  "nodes": [
+    {
+      "parameters": {
+        "dataType": "binary",
+        "loader": "pdfLoader",
+        "textSplittingMode": "custom",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        656,
+        128
+      ],
+      "id": "09ceed9b-d746-47ce-beae-fbebd58e5954",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        80,
+        -96
+      ],
+      "id": "24999546-26f3-4299-b4f5-14a3a67e093a",
+      "name": "Merge"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        528,
+        128
+      ],
+      "id": "d7be1ca0-01bf-42ca-895d-ccc06bb2bd13",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "R49e3O5slf197oLS",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chunkSize": 500,
+        "chunkOverlap": 50,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        736,
+        336
+      ],
+      "id": "b24ebe37-d2eb-4c30-b883-9cd6025ffaf0",
+      "name": "Recursive Character Text Splitter1"
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of items) {\n  // Loop through all binary properties (usually 'data')\n  for (const key in item.binary) {\n    item.binary[key].mimeType = 'application/pdf';\n    item.binary[key].fileExtension = 'pdf';\n    item.binary[key].fileName = 'document.pdf'; // Optional: gives it a clean name\n  }\n}\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        304,
+        -96
+      ],
+      "id": "60e6eff3-1a5a-4628-b071-2974432c91ff",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -368,
+        -96
+      ],
+      "id": "b942cb16-e168-47ec-a280-6db7372a6494",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "ifrs-bot",
+          "mode": "list",
+          "cachedResultName": "ifrs-bot"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        560,
+        -96
+      ],
+      "id": "d578f401-e8ed-4158-9c56-04d7a5492165",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "OtGzYW8WvfwF2Esu",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "**MIME Type Sanitizer**\n Includes a custom JavaScript node to force `application/pdf` recognition on raw Google Drive binary streams, preventing data loader errors.",
+        "height": 192,
+        "width": 192,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        256,
+        -272
+      ],
+      "typeVersion": 1,
+      "id": "466c1fd7-5620-42fe-aea7-3d37755a9ab5",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "**Chunking Strategy**\n* **Size:** 500 characters\n* **Overlap:** 50 characters\n*Why:* Optimized for legal text to ensure paragraph numbers and context are preserved across chunk boundaries for accurate citation.",
+        "height": 176,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        848,
+        288
+      ],
+      "id": "2440132c-234d-4308-928f-b1943c9025ee",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Agentic IFRS S1 & S2 Assistant\n\n**Overview**\nThis project is an autonomous AI Agent designed to assist financial analysts with IFRS compliance and general accounting queries. It employs a **Hybrid RAG (Retrieval-Augmented Generation)** architecture:\n1.  **For IFRS S1 & S2:** It strictly retrieves and cites official legal text from a vector database.\n2.  **For General Finance:** It leverages the LLM's broader training to answer questions about other standards (e.g., IFRS 1, IAS 1) without requiring database lookups.",
+        "height": 416,
+        "width": 288,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -704,
+        -256
+      ],
+      "id": "c332e6b5-c9df-4406-8f7c-97ed121e0698",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "**Step 2: Credentials Setup**\nBefore running, ensure you have added your API keys in the Credentials section:\n1. **Google Gemini API** (for Embeddings)\n2. **Pinecone API** (for Vector Store)",
+        "height": 176,
+        "width": 288,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        224,
+        96
+      ],
+      "id": "fc6f9ea4-58d5-4d4a-b1d3-5b94a96c0a1f",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "**Step 1: Data Source Configuration**\nCopy the followings links and paste them into the HTTP Request (IFRS S1 & IFRS S2) nodes: \n   - IFRS S1 (General Requirements): https://drive.google.com/uc?export=download&id=15fBhR0L7Nu_ibXupozuF8FsNSqqFQYC2)\n   - IFRS S2 (Climate-related Disclosures): https://drive.google.com/uc?export=download&id=1VpKPZLsCiB-Jatv4-mr6G1fcDHTuxk0L",
+        "height": 304,
+        "width": 288,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        -480
+      ],
+      "id": "70dc871b-d7fa-4b88-b3bc-21933107c5be",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "url": "https://drive.google.com/uc?export=download&id=1VpKPZLsCiB-Jatv4-mr6G1fcDHTuxk0L",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -144,
+        0
+      ],
+      "id": "b7d260c6-bf13-4175-b519-04526ee65994",
+      "name": "IFRS S2"
+    },
+    {
+      "parameters": {
+        "url": "https://drive.google.com/uc?export=download&id=15fBhR0L7Nu_ibXupozuF8FsNSqqFQYC2",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -144,
+        -192
+      ],
+      "id": "388d74c7-1cd8-4387-a078-71d57058f6fd",
+      "name": "IFRS S1"
+    },
+    {
+      "parameters": {
+        "content": "**Step 3: Index Configuration**\n* **Action:** Create an Index in your Pinecone Console named `ifrs-bot`.\n* **CRITICAL:** Set Dimensions to **768** (matches Gemini `text-embedding-004`).\n* **Execution:** Click **\"Execute Workflow\"** ONCE to download the PDFs, chunk them, and upload vectors to Pinecone.",
+        "height": 272,
+        "width": 288,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        528,
+        -336
+      ],
+      "id": "6e2091a4-c59a-4a77-af60-ab0d57865baf",
+      "name": "Sticky Note5"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter1": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "IFRS S2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "IFRS S1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IFRS S2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "IFRS S1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ccbf876d-186d-418b-a262-bad2042b03eb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c8c7a857516bd465a353043de5e546c1846147ca3c650cc6a167b35bd87f8b16"
+  },
+  "id": "LjKQFr0Qg6MjVxcc",
+  "tags": []
+}

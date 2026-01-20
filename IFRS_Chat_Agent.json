@@ -1,0 +1,225 @@
+{
+  "name": "IFRS RAG - Chat Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "daae1d67-3617-48a5-9dff-d77ae69e9783",
+      "name": "When chat message received",
+      "webhookId": "580cffab-6a67-4be3-9022-09d2c4a02b76"
+    },
+    {
+      "parameters": {
+        "options": {
+          "temperature": 0.1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        224,
+        224
+      ],
+      "id": "ec6104a7-21f5-4840-8cdd-8dc771a5ef07",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "R49e3O5slf197oLS",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        352,
+        224
+      ],
+      "id": "c2c8a34c-f3b2-4cf3-9eb7-7e6147e6d4b7",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        560,
+        432
+      ],
+      "id": "4e548f7f-d69a-48da-b059-1e4b4b88f9c5",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "R49e3O5slf197oLS",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Call this tool to find information about IFRS S1 and S2 standards, specifically regarding climate risks and disclosures.",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "ifrs-bot",
+          "mode": "list",
+          "cachedResultName": "ifrs-bot"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        480,
+        224
+      ],
+      "id": "1b1e3741-b2bc-4f6f-8399-dc699c705a67",
+      "name": "search_ifrs_standards",
+      "credentials": {
+        "pineconeApi": {
+          "id": "OtGzYW8WvfwF2Esu",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are an expert IFRS and Finance Consultant.\n\nYour goal is to assist users with accounting, financial reporting, and sustainability standards. Follow these logic rules strictly:\n\n1. **For IFRS S1 & S2 Questions:**\n   - You MUST use the `search_ifrs_standards` tool to retrieve the official text.\n   - You MUST cite specific paragraph numbers (e.g., \"IFRS S2, Para 29(a)\") for every claim you make based on the tool's output.\n   - If the tool does not contain the answer, state: \"I cannot find that specific detail in the provided standards.\"\n\n2. **For General Finance/Accounting Questions:**\n   - You may use your general training to answer questions about other standards (e.g., IAS 1, IFRS 9), financial ratios, or accounting principles.\n   - You do NOT need to use the tool for these general questions.\n\n3. **Guardrails:**\n   - Do NOT answer questions unrelated to finance, business, or accounting (e.g., recipes, sports, general life advice).\n   - Politely decline such queries by stating you are a specialised finance assistant."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        280,
+        0
+      ],
+      "id": "34d053df-e2f5-4028-9c35-40d1a02212e0",
+      "name": "IFRS Agent"
+    },
+    {
+      "parameters": {
+        "content": "**How to Run**\n1.  Ensure **Workflow 1 (Ingestion)** has been run successfully at least once.\n2.  Click the **Open Chat** button.\n3.  **Try asking a question** ",
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        160
+      ],
+      "id": "93d47042-2e79-49b9-8d84-d439f876f9b5",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "**Agent Configuration**\n* **Model:** Ensure the Google Gemini Chat Model node is connected.\n* **Prompt:** Open this node to view/edit the **System Message**. It is currently set to a \"Hybrid\" mode (Strict Citations for S1/S2 + General Knowledge for Finance).",
+        "height": 240,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        272,
+        -224
+      ],
+      "id": "ac34aca8-1007-4e90-8fce-9c8d1642aade",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "**Database Connection**\n* **Index Name:** Must match the index created in Workflow 1 (e.g., `ifrs-bot`).\n* **Mode:** Ensure this is set to **Retrieve (as Tool)**. This allows the Agent to decide *when* to search the database.",
+        "height": 208,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        736,
+        160
+      ],
+      "id": "6e9c06d8-8349-4e9a-a39e-96a290678022",
+      "name": "Sticky Note2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "IFRS Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "IFRS Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "IFRS Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "search_ifrs_standards",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "search_ifrs_standards": {
+      "ai_tool": [
+        [
+          {
+            "node": "IFRS Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "07dae7d1-e94d-4687-811c-08df099d3255",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c8c7a857516bd465a353043de5e546c1846147ca3c650cc6a167b35bd87f8b16"
+  },
+  "id": "seM3luTK5b1RRo64",
+  "tags": []
+}
